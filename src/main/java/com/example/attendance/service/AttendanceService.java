@@ -8,8 +8,10 @@ import com.example.attendance.util.LocationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.example.attendance.dto.LogoutChekoutRequest;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +51,7 @@ public class AttendanceService {
                 UserAttendance attendance = new UserAttendance();
                 attendance.setUserId(userId);
                 attendance.setSiteId(site.getSiteId());
-                attendance.setCheckInTime(LocalDateTime.now());
+                attendance.setCheckInTime(nowInUtc());
                 attendance.setCheckInLat(lat);
                 attendance.setCheckInLng(lng);
 
@@ -84,12 +86,31 @@ public class AttendanceService {
             return "Check-out FAILED: Not in site location";
         }
 
-        attendance.setCheckOutTime(LocalDateTime.now());
+        attendance.setCheckOutTime(nowInUtc());
         attendance.setCheckOutLat(lat);
         attendance.setCheckOutLng(lng);
 
         attendanceRepository.save(attendance);
         log.info("Check-out SUCCESS for user={}", userId);
         return "Check-out SUCCESS";
+    }
+
+    public String logoutAndCheckout(LogoutChekoutRequest request) {
+
+        UserAttendance attendance = attendanceRepository
+                .findTopByUserIdAndCheckOutTimeIsNullOrderByCheckInTimeDesc(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("No active check-in found"));
+
+        attendance.setCheckOutTime(nowInUtc());
+
+        attendance.setLogoutReason(request.getReason());
+
+        attendanceRepository.save(attendance);
+
+        return "Checkout completed successfully";
+    }
+
+    private LocalDateTime nowInUtc() {
+        return LocalDateTime.now(ZoneOffset.UTC);
     }
 }

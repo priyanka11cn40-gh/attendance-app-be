@@ -39,4 +39,7 @@ public class UserAttendance {
 
     @Column(name = "check_out_lng")
     private Double checkOutLng;
+
+    @Column(name = "logout_reason")
+    private String logoutReason;
 }

@@ -15,7 +15,7 @@ public class AttendanceReportService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
 
-            message.setTo("nsvsrikar@gmail.com");   // receiver
+            message.setTo("admin@efcoindia.com");
             message.setSubject("Daily Attendance Report");
             message.setText("Attendance report generated successfully.");
 
